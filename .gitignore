@@ -1,0 +1,87 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.ear
+
+# Virtual machine crash logs, core dumps
+hs_err_pid*
+core.*
+
+# Maven target directory
+/target/
+
+# Maven build files
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Eclipse IDE files
+.project
+.classpath
+.settings/
+.loadpath
+
+# IntelliJ IDEA files
+*.iml
+.idea/
+*.ipr
+*.iws
+out/
+
+# NetBeans IDE files
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Generated files
+gen/
+bin/
+
+# Lombok generated files
+lombok.config
+
+# Logs and database files
+logs/
+*.sql
+*.sqlite
+
+# Other
+# Ignore generated resources
+.mvn/timing.properties
+.mvn/
+.env
+

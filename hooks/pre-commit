@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# Initialize variables to track check statuses
+lint_status="Passed"
+coverage_status="Passed"
+build_status="Passed"
+
+# Define color codes
+redColor='\033[31m'
+greenColor='\033[32m'
+resetColor='\033[0m'
+
+# Run lint check
+echo "Running lint..."
+make lint
+lint_exit_status=$?
+if [ $lint_exit_status -ne 0 ]; then
+  echo "${redColor}Linting failed. Please fix the lint errors before committing.${resetColor}"
+  echo "${redColor}Try to fix linting issues by running: make lint-fix${resetColor}"
+  lint_status="Failed"
+fi
+
+# Run coverage check
+echo "Running coverage..."
+make coverage
+coverage_exit_status=$?
+if [ $coverage_exit_status -ne 0 ]; then
+  echo "${redColor}Coverage check failed.${resetColor}"
+  coverage_status="Failed"
+fi
+
+# Run build process
+echo "Running build..."
+make build
+build_exit_status=$?
+if [ $build_exit_status -ne 0 ]; then
+  echo "${redColor}Build process failed.${resetColor}"
+  build_status="Failed"
+fi
+
+# Display summary report
+echo -e "\n${greenColor}Summary Report:${resetColor}"
+echo "Lint Check: $([ "$lint_status" = "Passed" ] && echo "${greenColor}Passed${resetColor}" || echo "${redColor}Failed${resetColor}")"
+echo "Coverage Check: $([ "$coverage_status" = "Passed" ] && echo "${greenColor}Passed${resetColor}" || echo "${redColor}Failed${resetColor}")"
+echo "Build Check: $([ "$build_status" = "Passed" ] && echo "${greenColor}Passed${resetColor}" || echo "${redColor}Failed${resetColor}")"
+
+# Exit with the appropriate status
+if [ "$lint_status" = "Failed" ] || [ "$coverage_status" = "Failed" ] || [ "$build_status" = "Failed" ]; then
+  exit 1
+else
+  exit 0
+fi
