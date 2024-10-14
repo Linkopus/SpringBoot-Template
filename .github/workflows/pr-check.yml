@@ -19,7 +19,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      maven-cache-hit: ${{ steps.cache-maven.outputs.cache-hit }}
+      maven-cache-exists: ${{ steps.check-artifact.outputs.exists }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -30,18 +30,47 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Cache Maven packages
-        id: cache-maven
-        uses: actions/cache@v3
+      - name: Check for existing Maven cache artifact
+        id: check-artifact
+        uses: actions/upload-artifact@v3
         with:
-          path: ~/.m2
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
+          name: maven-cache
+          path: ~/.m2_cache.tar.zst
+          if-no-files-found: ignore
+
+      - name: Download Maven cache artifact
+        if: ${{ always() && steps.check-artifact.outputs.exists == 'true' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: maven-cache
+          path: ~/
+
+      - name: Decompress and Extract Maven cache
+        if: ${{ always() && steps.check-artifact.outputs.exists == 'true' }}
+        run: |
+          echo "Decompressing Maven cache..."
+          zstd -d ~/maven-cache.tar.zst -o ~/maven-cache.tar
+          tar -xf ~/maven-cache.tar -C ~/.m2
+          rm ~/maven-cache.tar ~/maven-cache.tar.zst
+          echo "Maven cache restored."
 
       - name: Install Dependencies
         run: |
           mvn install -DskipTests=true -B -V
+
+      - name: Compress Maven cache
+        run: |
+          echo "Compressing Maven cache..."
+          tar -cf ~/maven-cache.tar ~/.m2
+          zstd ~/maven-cache.tar -o ~/maven-cache.tar.zst
+          rm ~/maven-cache.tar
+          echo "Maven cache compressed."
+
+      - name: Upload Maven cache artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: maven-cache
+          path: ~/maven-cache.tar.zst
 
   lint:
     needs: setup
@@ -55,6 +84,24 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Download Maven cache artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: maven-cache
+          path: ~/
+
+      - name: Decompress and Extract Maven cache
+        run: |
+          if [ -f ~/maven-cache.tar.zst ]; then
+            echo "Decompressing Maven cache for lint job..."
+            zstd -d ~/maven-cache.tar.zst -o ~/maven-cache.tar
+            tar -xf ~/maven-cache.tar -C ~/.m2
+            rm ~/maven-cache.tar ~/maven-cache.tar.zst
+            echo "Maven cache restored."
+          else
+            echo "No Maven cache artifact found."
+          fi
 
       - name: Run Lint
         run: |
@@ -74,6 +121,24 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
+      - name: Download Maven cache artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: maven-cache
+          path: ~/
+
+      - name: Decompress and Extract Maven cache
+        run: |
+          if [ -f ~/maven-cache.tar.zst ]; then
+            echo "Decompressing Maven cache for coverage job..."
+            zstd -d ~/maven-cache.tar.zst -o ~/maven-cache.tar
+            tar -xf ~/maven-cache.tar -C ~/.m2
+            rm ~/maven-cache.tar ~/maven-cache.tar.zst
+            echo "Maven cache restored."
+          else
+            echo "No Maven cache artifact found."
+          fi
+
       - name: Run Coverage
         run: |
           echo "Running coverage..."
@@ -91,6 +156,24 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
+
+      - name: Download Maven cache artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: maven-cache
+          path: ~/
+
+      - name: Decompress and Extract Maven cache
+        run: |
+          if [ -f ~/maven-cache.tar.zst ]; then
+            echo "Decompressing Maven cache for build job..."
+            zstd -d ~/maven-cache.tar.zst -o ~/maven-cache.tar
+            tar -xf ~/maven-cache.tar -C ~/.m2
+            rm ~/maven-cache.tar ~/maven-cache.tar.zst
+            echo "Maven cache restored."
+          else
+            echo "No Maven cache artifact found."
+          fi
 
       - name: Run Build
         run: |
