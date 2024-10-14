@@ -1,0 +1,98 @@
+name: Quality Assurance workflow
+
+on:
+  pull_request:
+    branches: [development]
+
+jobs:
+  check-pr-title:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Check Title Format
+        uses: deepakputhraya/action-pr-title@master
+        with:
+          regex: '^(feat|fix|refactor|docs|test):\s\[\w+-\d+\]\s.+$'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      maven-cache-hit: ${{ steps.cache-maven.outputs.cache-hit }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Cache Maven packages
+        id: cache-maven
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Install Dependencies
+        run: |
+          mvn install -DskipTests=true -B -V
+
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Run Lint
+        run: |
+          echo "Running lint..."
+          make lint
+
+  coverage:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Run Coverage
+        run: |
+          echo "Running coverage..."
+          make coverage
+
+  build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Run Build
+        run: |
+          echo "Running build..."
+          make build
