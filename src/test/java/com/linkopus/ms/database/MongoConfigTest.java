@@ -1,15 +1,19 @@
 package com.linkopus.ms.database;
 
 import com.linkopus.ms.config.Config;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.event.ConnectionPoolClearedEvent;
 import com.mongodb.event.ConnectionPoolReadyEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class MongoConfigTest {
@@ -29,8 +33,14 @@ class MongoConfigTest {
 
 	@Test
 	void testMongoClient() {
-		MongoClient client = mongoConfig.mongoClient();
-		assertNotNull(client);
+		try (MockedStatic<MongoClients> mockedMongoClients = mockStatic(MongoClients.class)) {
+			MongoClient mockClient = mock(MongoClient.class);
+			mockedMongoClients.when(() -> MongoClients.create(any(MongoClientSettings.class))).thenReturn(mockClient);
+
+			MongoClient client = mongoConfig.mongoClient();
+			assertNotNull(client, "MongoClient should not be null");
+			assertEquals(mockClient, client, "MongoClient should be the mocked instance");
+		}
 	}
 
 	@Test
@@ -42,8 +52,8 @@ class MongoConfigTest {
 
 		MongoTemplate template = mongoConfig.mongoTemplate(mockMongoClient);
 
-		assertNotNull(template);
-		assertEquals(TEST_DB_NAME, template.getDb().getName());
+		assertNotNull(template, "MongoTemplate should not be null");
+		assertEquals(TEST_DB_NAME, template.getDb().getName(), "Database name should match");
 	}
 
 	@Test
@@ -54,9 +64,7 @@ class MongoConfigTest {
 		ConnectionPoolClearedEvent clearedEvent = mock(ConnectionPoolClearedEvent.class);
 
 		listener.connectionPoolReady(readyEvent);
-
 		listener.connectionPoolReady(readyEvent);
-
 		listener.connectionPoolCleared(clearedEvent);
 	}
 }
