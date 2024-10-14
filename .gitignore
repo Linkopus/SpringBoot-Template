@@ -82,6 +82,5 @@ logs/
 # Other
 # Ignore generated resources
 .mvn/timing.properties
-.mvn/
 .env
 
