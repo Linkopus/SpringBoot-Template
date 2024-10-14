@@ -30,30 +30,6 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Check for existing Maven cache artifact
-        id: check-artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: maven-cache
-          path: ~/.m2_cache.tar.zst
-          if-no-files-found: ignore
-
-      - name: Download Maven cache artifact
-        if: ${{ always() && steps.check-artifact.outputs.exists == 'true' }}
-        uses: actions/download-artifact@v3
-        with:
-          name: maven-cache
-          path: ~/
-
-      - name: Decompress and Extract Maven cache
-        if: ${{ always() && steps.check-artifact.outputs.exists == 'true' }}
-        run: |
-          echo "Decompressing Maven cache..."
-          zstd -d ~/maven-cache.tar.zst -o ~/maven-cache.tar
-          tar -xf ~/maven-cache.tar -C ~/.m2
-          rm ~/maven-cache.tar ~/maven-cache.tar.zst
-          echo "Maven cache restored."
-
       - name: Install Dependencies
         run: |
           mvn install -DskipTests=true -B -V
