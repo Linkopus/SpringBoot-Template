@@ -29,8 +29,8 @@ test:
 
 # Build the project
 build:
-	$(MVN_CMD) clean install
+	$(MVN_CMD) clean install -DskipTests
 
 # Install the project to the local Maven repository
 install:
-	$(MVN_CMD) initialize install
+	$(MVN_CMD) initialize install -DskipTests
