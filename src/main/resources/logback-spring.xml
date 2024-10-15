@@ -1,0 +1,29 @@
+<configuration>
+    <conversionRule conversionWord="highlightex" converterClass="com.linkopus.ms.utils.logger.LogsColors" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%highlightex(%-5level [%d{yyyy-MM-dd HH:mm:ss}] [%X{requestId:-00000-xxxxx-0000000-xxx-000}] [%C:%L] %msg%n)</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="DAILY_ROLLING_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%-5level [%d{yyyy-MM-dd HH:mm:ss}] [%X{requestId:-00000-xxxxx-0000000-xxx-000}] [%C:%L] %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="ERROR">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="DAILY_ROLLING_FILE" />
+    </root>
+
+    <logger name="com.linkopus" level="INFO" />
+    <logger name="org.springframework.boot.web" level="INFO" />
+
+</configuration>
